@@ -12,5 +12,8 @@ namespace DotNetAndReactSample.Models
     {
         [XmlElement("STOK")]
         public List<Stock> Stocks { get; set; }
+
+        [XmlElement("StockCount")]
+        public int StockCount { get; set; }
     }
 }

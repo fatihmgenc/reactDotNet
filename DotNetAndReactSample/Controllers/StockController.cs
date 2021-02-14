@@ -25,7 +25,7 @@ namespace DotNetAndReactSample.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Stock> Get(int countPerPage, int page)
+        public StockCollection Get(int countPerPage, int page)
         {
             StockCollection result;
             bool isExist = memoryCache.TryGetValue("result", out result);
@@ -33,12 +33,19 @@ namespace DotNetAndReactSample.Controllers
             {
                 var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(300));
                 FileStream fileStream = new FileStream("ExternalSource/menu.xml", FileMode.Open);
-                result = (StockCollection) serializer.Deserialize(fileStream);
+                result = (StockCollection)serializer.Deserialize(fileStream);
+                result.StockCount = result.Stocks.Count;
                 memoryCache.Set("result", result, cacheEntryOptions);
             }
-            
-            return result.Stocks.Skip(countPerPage*(page-1)).Take(countPerPage);
-            
+
+            var tempResult = new StockCollection()
+            {
+                Stocks =  result.Stocks.Skip(countPerPage * (page - 1)).Take(countPerPage).ToList(),
+                StockCount = result.StockCount
+            };
+
+            return tempResult;
+                        
 
         }
     }
