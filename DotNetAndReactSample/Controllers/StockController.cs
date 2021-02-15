@@ -31,11 +31,12 @@ namespace DotNetAndReactSample.Controllers
             bool isExist = memoryCache.TryGetValue("result", out result);
             if (!isExist)
             {
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(300));
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromSeconds(3000));
                 FileStream fileStream = new FileStream("ExternalSource/menu.xml", FileMode.Open);
                 result = (StockCollection)serializer.Deserialize(fileStream);
                 result.StockCount = result.Stocks.Count;
                 memoryCache.Set("result", result, cacheEntryOptions);
+                fileStream.Close();
             }
 
             var tempResult = new StockCollection()
