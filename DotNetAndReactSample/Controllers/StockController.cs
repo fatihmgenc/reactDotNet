@@ -1,4 +1,5 @@
 ﻿using DotNetAndReactSample.Models;
+using DotNetAndReactSample.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System;
@@ -17,7 +18,7 @@ namespace DotNetAndReactSample.Controllers
     [Route("api/[controller]/[action]")]
     public class StockController : Controller
     {
-
+        GoldListViewModel viewModel = GoldListViewModel.getViewModel();
         private readonly IMemoryCache memoryCache;
 
         public StockController(IMemoryCache memoryCache)
@@ -28,7 +29,6 @@ namespace DotNetAndReactSample.Controllers
         [HttpGet]
         public StockCollection Get(int countPerPage, int page)
         {
-
             StockCollection result;
             bool isExist = memoryCache.TryGetValue("result", out result);
 
@@ -52,10 +52,13 @@ namespace DotNetAndReactSample.Controllers
 
             return tempResult;
         }
+
         [HttpGet]
-        async public Task<ActionResult> GoldPriceList(int countPerPage=10, int page=1)
+        async public Task<ActionResult> GoldPriceList(int countPerPage, int page , int minPrice, int maxPrice)
         {
-        
+            viewModel.CountPerPage = countPerPage != 0 ? countPerPage : viewModel.CountPerPage;
+            viewModel.MinPrice = minPrice != 0 ? minPrice : viewModel.MinPrice;
+            viewModel.MaxPrice = maxPrice != 0 ? maxPrice : viewModel.MaxPrice;
             GoldToZlotyPriceRecordCollection result;
             bool isExist = memoryCache.TryGetValue("result", out result);
 
@@ -68,7 +71,7 @@ namespace DotNetAndReactSample.Controllers
                     Method = HttpMethod.Get,
                     RequestUri = new Uri("http://api.nbp.pl/api/cenyzlota/2020-01-01/2021-01-01?format=xml")
                 };
-                using (var response =  await client.SendAsync(request))
+                using (var response = await client.SendAsync(request))
                 {
                     response.EnsureSuccessStatusCode();
                     var streamReader = await response.Content.ReadAsStreamAsync();
@@ -76,14 +79,24 @@ namespace DotNetAndReactSample.Controllers
                 }
             }
 
-            var model = new GoldToZlotyPriceRecordCollection()
-            {
-                Records = result.Records.Skip(countPerPage * (page - 1)).Take(countPerPage).ToList(),
-                PageCount = result.Records.Count / countPerPage,
-                CurrentPageNumber = page,
-            };
 
-            return View(model);
+            viewModel.Records = result.Records.Skip(viewModel.CountPerPage * (page - 1)).
+                Take(viewModel.CountPerPage).
+                Where(r=> double.Parse(r.Price)>=viewModel.MinPrice 
+                && double.Parse(r.Price) < viewModel.MaxPrice).ToList();
+            viewModel.CurrentPageNumber = page;
+            viewModel.Count = result.Records.Count(r => double.Parse(r.Price) >= viewModel.MinPrice
+                && double.Parse(r.Price) < viewModel.MaxPrice);
+            return View(viewModel);
+
+        }
+
+        [HttpPost]
+        public Task<ActionResult> GoldPriceList( )
+        {
+            var min = Request.Form["minPrice"];
+            var max = Request.Form["maxPrice"];
+            return GoldPriceList(viewModel.CountPerPage,viewModel.CurrentPageNumber, int.Parse(min), int.Parse(max));
 
         }
     }

@@ -13,12 +13,5 @@ namespace DotNetAndReactSample.Models
         [System.Xml.Serialization.XmlElement("CenaZlota")]
         public List<ZlotyPrice>  Records { get; set; }
 
-        public int Count { get; set; }
-
-        public int CurrentPageNumber { get; set; }
-
-        public int PageCount { get; set; }
-
-
     }
 }

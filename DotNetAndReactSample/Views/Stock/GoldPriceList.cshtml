@@ -1,10 +1,10 @@
-﻿@model DotNetAndReactSample.Models.GoldToZlotyPriceRecordCollection
+﻿@model DotNetAndReactSample.ViewModel.GoldListViewModel
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @{
     ViewData["Title"] = "View";
 }
 <head>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 
@@ -36,10 +36,24 @@
             }
         </tbody>
     </table>
+    <div>
+        <form method="POST" asp-action="GoldPriceList" >
+            <label for="minPrice">minPrice</label>
+            <input type="number" required="required" id="minPrice" name="minPrice" placeholder="@Model.MinPrice" />
+            <label for="maxPrice">maxPrice</label>
+            <input type="number" required="required" id="maxPrice" name="maxPrice" placeholder="@Model.MaxPrice" />
+            <input type="submit" />
+        </form>
+    </div>
+    <div class="pages">
+        <a asp-action="GoldPriceList" asp-controller="Stock" asp-route-page="@Model.CurrentPageNumber" asp-route-countPerPage="10">Show 10  || </a>
+        <a asp-action="GoldPriceList" asp-controller="Stock" asp-route-page="@Model.CurrentPageNumber" asp-route-countPerPage="25">Show 25  || </a>
+        <a asp-action="GoldPriceList" asp-controller="Stock" asp-route-page="@Model.CurrentPageNumber" asp-route-countPerPage="50">Show 50</a>
+    </div>
     <div >
-        @for (int i = 1; i <= Model.PageCount; i++)
+        @for (int i = 1; i <= Model.Count/Model.CountPerPage; i++)
         {
-            <a asp-action="GoldPriceList" asp-controller="Stock" asp-route-page="@i">@i</a>
+            <a asp-action="GoldPriceList" asp-controller="Stock" asp-route-page="@i" >@i</a>
         }
 
     </div>
