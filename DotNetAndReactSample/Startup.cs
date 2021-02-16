@@ -26,6 +26,7 @@ namespace DotNetAndReactSample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllersWithViews();
             services.AddMemoryCache();
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
@@ -64,7 +65,10 @@ namespace DotNetAndReactSample
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                //endpoints.MapControllers();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Stock}/{action=GoldPriceList}/{id?}");
             });
         }
     }
