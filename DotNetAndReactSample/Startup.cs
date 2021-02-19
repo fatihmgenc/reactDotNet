@@ -1,7 +1,13 @@
+using DinkToPdf;
+using DinkToPdf.Contracts;
+using DotNetAndReactSample.Models;
+using DotNetAndReactSample.Utility;
+using DotNetAndReactSample.Utility.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,9 +32,17 @@ namespace DotNetAndReactSample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            
-            services.AddControllersWithViews();
+            services.AddMvc();
             services.AddMemoryCache();
+            services.AddSingleton(typeof(IXmlToList<StockCollection>),ServiceProvider => { 
+                
+                var cacheRef = ServiceProvider.GetService<IMemoryCache>();
+                var foo = new XmlToCollectionReader(cacheRef);
+                return foo;        
+            });
+
+            services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+            services.AddControllersWithViews();
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
                 builder.AllowAnyOrigin()
